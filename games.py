@@ -28,6 +28,19 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REGISTRY_PATH = os.path.join(HERE, "games.json")
 
 
+# Keys that open in-game chat/text input in most games. A random RL press
+# here makes the agent type garbage instead of playing — never allow them
+# in an action space. Stripped from every profile at construction.
+CHAT_KEYS = ("enter", "t", "y", "slash", "/")
+
+
+def _strip_chat_keys(keys: List[str]) -> List[str]:
+    dropped = [k for k in keys if k.strip().lower() in CHAT_KEYS]
+    if dropped:
+        print(f"[GameAI] Ignoring chat keys from action space: {','.join(dropped)}")
+    return [k for k in keys if k.strip().lower() not in CHAT_KEYS]
+
+
 @dataclass
 class GameProfile:
     name: str
@@ -42,6 +55,9 @@ class GameProfile:
     frame_scale: Tuple[int, int] = (84, 84)
     episode_seconds: int = 60
     notes: str = ""
+
+    def __post_init__(self):
+        self.keys = _strip_chat_keys(self.keys)
 
 
 BUILTINS: Dict[str, GameProfile] = {
