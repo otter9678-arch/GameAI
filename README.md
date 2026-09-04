@@ -18,9 +18,9 @@ explicit bot policies, retro emulators, your own games.
 
 ```bash
 python install_deps.py
-# For GPU on the RTX 4090:
+# For GPU on the RTX 4090 (cu124 index lacks Python 3.14 wheels; cu130 works):
 pip uninstall torch torchvision -y
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
 ```
 
 ## Usage

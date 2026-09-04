@@ -244,13 +244,16 @@ class FrameStack:
 # ---------- Agent ----------
 
 class Agent:
-    def __init__(self, num_actions: int, frame_stack: int = 4, lr: float = 3e-4):
-        self.net = PolicyNetwork(in_channels=frame_stack, num_actions=num_actions)
+    def __init__(self, num_actions: int, frame_stack: int = 4, lr: float = 3e-4,
+                 device: Optional[str] = None):
+        self.device = torch.device(
+            device or ("cuda" if torch.cuda.is_available() else "cpu"))
+        self.net = PolicyNetwork(in_channels=frame_stack, num_actions=num_actions).to(self.device)
         self.optimizer = optim.Adam(self.net.parameters(), lr=lr)
         self.num_actions = num_actions
 
     def choose_action(self, stacked, deterministic: bool = False):
-        x = torch.tensor(stacked, dtype=torch.float32).unsqueeze(0)
+        x = torch.tensor(stacked, dtype=torch.float32, device=self.device).unsqueeze(0)
         logits, value = self.net(x)
         probs = torch.softmax(logits, dim=-1)[0]
         if deterministic:
@@ -266,8 +269,9 @@ class Agent:
 
     def load(self, path: str):
         if os.path.exists(path):
-            self.net.load_state_dict(torch.load(path))
-            print(f"[GameAI] Loaded model from {path}")
+            self.net.load_state_dict(
+                torch.load(path, map_location=self.device))
+            print(f"[GameAI] Loaded model from {path} (device: {self.device})")
 
 
 # ---------- Trainer (endless self-learning) ----------
