@@ -110,6 +110,21 @@ def generic_profile(window_title: str) -> GameProfile:
     )
 
 
+# Games that must NEVER be driven by GameAI — online multiplayer with
+# anti-cheat. Automation there violates ToS / computer-fraud law and bans
+# accounts. resolve() and the CLI hard-block these by name, alias, or
+# window title, including via the generic fallback profile.
+DENYLIST: Tuple[str, ...] = (
+    "destiny 2", "destiny2", "valorant", "fortnite",
+    "overwatch", "overwatch 2",
+)
+
+
+def is_denied(name: str) -> bool:
+    q = name.strip().lower()
+    return any(d == q or d in q or q in d for d in DENYLIST)
+
+
 def _load_registry() -> Dict[str, GameProfile]:
     if not os.path.exists(REGISTRY_PATH):
         return {}
@@ -132,6 +147,11 @@ def list_games() -> Dict[str, GameProfile]:
 def resolve(name: str) -> GameProfile:
     """Find a game by name or alias (case-insensitive)."""
     q = name.strip().lower()
+    if is_denied(q):
+        raise SystemExit(
+            f"REFUSED: '{name}' is an online multiplayer game with anti-cheat. "
+            "GameAI does not support Destiny 2, Valorant, Fortnite, or Overwatch "
+            "— automation there violates ToS and can violate computer-fraud law.")
     games = list_games()
     if q in games:
         return games[q]

@@ -366,6 +366,11 @@ def _model_path(name: str) -> str:
 
 
 def _resolve_profile(name: str) -> gamereg.GameProfile:
+    if gamereg.is_denied(name):
+        raise SystemExit(
+            f"REFUSED: '{name}' is an online multiplayer game with anti-cheat. "
+            "GameAI does not support Destiny 2, Valorant, Fortnite, or Overwatch "
+            "— automation there violates ToS and can violate computer-fraud law.")
     try:
         return gamereg.resolve(name)
     except SystemExit:

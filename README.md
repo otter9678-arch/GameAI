@@ -16,6 +16,11 @@ in solo/offline sessions, never in a crew with other human players.** Intended
 for: single-player games, sandbox games, games with explicit bot policies,
 retro emulators, your own games.
 
+**Hard-blocked games:** GameAI refuses Destiny 2, Valorant, Fortnite, and
+Overwatch (and any request containing those names) — online multiplayer with
+anti-cheat. This applies to both registered lookups and the generic
+unregistered-title fallback.
+
 ## Setup
 
 ```bash
