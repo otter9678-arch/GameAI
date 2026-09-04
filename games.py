@@ -71,7 +71,7 @@ BUILTINS: Dict[str, GameProfile] = {
         ),
         GameProfile(
             name="pulsar_lost_colony",
-            window_title="PULSAR: Lost Colony",
+            window_title="PULSAR_LostColony",
             aliases=["pulsar", "plc"],
             keys=["w", "a", "s", "d", "space", "shift", "e", "click"],
             damage_region=(0.02, 0.86, 0.30, 0.98),  # health HUD, bottom left

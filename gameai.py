@@ -324,9 +324,10 @@ class Trainer:
             return
         n = len(rewards)
         returns = [sum(rewards[i:]) * (0.99 ** i) for i in range(n)]
-        R = torch.tensor(returns, dtype=torch.float32)
-        R = (R - R.mean()) / (R.std() + 1e-8)
         logp_t = torch.stack(logps)
+        R = torch.tensor(returns, dtype=torch.float32,
+                         device=logp_t.device)  # match logp device (cuda/cpu)
+        R = (R - R.mean()) / (R.std() + 1e-8)
         loss = -(logp_t * R).sum()
         self.agent.optimizer.zero_grad()
         loss.backward()
