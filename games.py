@@ -69,6 +69,20 @@ BUILTINS: Dict[str, GameProfile] = {
                   "menus and dialogue. Jetpack (space) is only meaningful after "
                   "unlocking it.",
         ),
+        GameProfile(
+            name="pulsar_lost_colony",
+            window_title="PULSAR: Lost Colony",
+            aliases=["pulsar", "plc"],
+            keys=["w", "a", "s", "d", "space", "shift", "e", "click"],
+            damage_region=(0.02, 0.86, 0.30, 0.98),  # health HUD, bottom left
+            episode_seconds=120,
+            notes="Unity ship sim, moddable via PulsarModLoader (CapBot 2.0 target "
+                  "game). LEGAL: solo/offline sessions ONLY — PULSAR has online "
+                  "co-op; never run the agent in a crew with other human players. "
+                  "Health HUD region is approximate — verify/adjust with "
+                  "--damage-region after checking the in-game HUD layout. Start "
+                  "training from active ship gameplay, not the station or menus.",
+        ),
     ]
 }
 

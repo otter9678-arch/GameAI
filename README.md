@@ -2,8 +2,8 @@
 
 Python deep-learning framework that watches the screen, learns to play, and
 improves on its own. Runs on the RTX 4090. Ships with profiles for
-**Cyberpunk 2077** and **Starfield**, and can drive **any single-player game**
-from just its window title.
+**Cyberpunk 2077**, **Starfield**, and **PULSAR: Lost Colony**, and can drive
+**any single-player game** from just its window title.
 
 ## ⚠️ Legal — read first
 
@@ -11,8 +11,10 @@ Only use this on games that **allow bots**. Most multiplayer games with
 anti-cheat (Destiny 2, Valorant, Fortnite, Overwatch...) **ban accounts** for
 automation — using it there violates the ToS and can violate computer-fraud
 law. Cyberpunk 2077 and Starfield are single-player titles with no anti-cheat,
-so they are fine. Intended for: single-player games, sandbox games, games with
-explicit bot policies, retro emulators, your own games.
+so they are fine. **PULSAR: Lost Colony has online co-op — use the agent only
+in solo/offline sessions, never in a crew with other human players.** Intended
+for: single-player games, sandbox games, games with explicit bot policies,
+retro emulators, your own games.
 
 ## Setup
 
@@ -31,6 +33,7 @@ python gameai.py selftest             # offline end-to-end test (no input sent)
 python gameai.py train cyberpunk  --episodes 20 --dry-run   # watch it think, no input
 python gameai.py train cyberpunk  --episodes 20             # live training
 python gameai.py train starfield --episodes 20
+python gameai.py train pulsar    --episodes 20    # solo/offline sessions ONLY (co-op game)
 python gameai.py play  cyberpunk --seconds 30                # inference only
 ```
 
