@@ -73,7 +73,11 @@ BUILTINS: Dict[str, GameProfile] = {
             name="pulsar_lost_colony",
             window_title="PULSAR_LostColony",
             aliases=["pulsar", "plc"],
-            keys=["w", "a", "s", "d", "space", "shift", "e", "click"],
+            # Keys studied from on-screen HUD hints (controls command, 2026-09-04):
+            # LEFTSHIFT sprint, Z order menu, F flashlight, SPACE unlock cursor,
+            # TAB open tab menu, MOUSE4 jetpack (unsupported by pynput),
+            # weapon slots 1-4 (Hands/Phase Pistol/Repair Gun/Fire Extinguisher).
+            keys=["w", "a", "s", "d", "space", "shift", "e", "click", "f", "z"],
             damage_region=(0.02, 0.86, 0.30, 0.98),  # health HUD, bottom left
             episode_seconds=120,
             notes="Unity ship sim, moddable via PulsarModLoader (CapBot 2.0 target "

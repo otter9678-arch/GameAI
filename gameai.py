@@ -433,6 +433,87 @@ def cmd_play(args):
     play(profile, seconds=args.seconds, dry_run=args.dry_run)
 
 
+# ---------- controls (study the game's own on-screen key hints) ----------
+
+_OCR_PS = os.path.join(gamereg.HERE, "ocr.ps1")  # vendored Windows OCR helper
+_KNOWN_KEYS = {"W", "A", "S", "D", "E", "F", "Z", "Q", "R", "C", "X",
+               "SPACE", "TAB", "SHIFT", "LEFTSHIFT", "CTRL", "ALT",
+               "MOUSE1", "MOUSE2", "MOUSE4", "MOUSE5", "WHEELUP", "WHEELDOWN"}
+
+
+def _ocr_lines(path: str) -> List[str]:
+    import subprocess
+    if not os.path.exists(_OCR_PS):
+        raise SystemExit(f"OCR helper not found: {_OCR_PS}")
+    out = subprocess.run(
+        ["powershell", "-ExecutionPolicy", "Bypass", "-File", _OCR_PS, path],
+        capture_output=True, text=True, timeout=120).stdout
+    lines = []
+    for ln in out.splitlines():
+        if "|" in ln:
+            lines.append(ln.partition("|")[2].strip())
+    return [l for l in lines if l]
+
+
+def cmd_controls(args):
+    """Capture the game window, OCR its on-screen control hints, and compare
+    them with the profile's action space. Read-only: sends no input."""
+    import cv2
+    profile = _resolve_profile(args.game)
+    env = GameEnv(profile, dry_run=True)
+    try:
+        l, t, w, h = env.resolve_window()
+        shot = env.sct.grab({"top": t, "left": l, "width": w, "height": h})
+        arr = np.array(shot)[:, :, :3]  # BGR
+
+        stem = os.path.join(gamereg.HERE,
+                            f"controls_{_model_path(profile.name)[_model_path(profile.name).find('model_') + 6:-3]}")
+        full_png = stem + "_full.png"
+        hint_png = stem + "_hints.png"
+        cv2.imwrite(full_png, arr)
+        # PULSAR-style key-hint strip lives in the bottom-right corner.
+        hint = arr[int(h * 0.55):, int(w * 0.55):]
+        hint = cv2.resize(hint, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+        cv2.imwrite(hint_png, hint)
+        print(f"[GameAI] Saved captures: {full_png} , {hint_png}")
+
+        seen = {}
+        for src in (full_png, hint_png):
+            for line in _ocr_lines(src):
+                tok = line.split()
+                if len(tok) >= 2 and tok[0].upper() in _KNOWN_KEYS:
+                    seen[tok[0].upper()] = " ".join(tok[1:])
+
+        if not seen:
+            print("[GameAI] No control hints detected on screen "
+                  "(hints usually show during gameplay, not menus).")
+            return
+
+        norm = {"SPACE": "space", "LEFTSHIFT": "shift", "SHIFT": "shift",
+                "CTRL": "ctrl", "ALT": "alt", "TAB": "tab",
+                "MOUSE1": "click", "MOUSE2": "rclick"}
+        profile_keys = {k.lower() for k in profile.keys}
+        print(f"\n[GameAI] On-screen controls for '{profile.name}':")
+        for k, action in sorted(seen.items()):
+            mapped = norm.get(k, k.lower())
+            status = ("in action space" if mapped in profile_keys
+                      else "NOT in action space"
+                      + (" (mouse side-button unsupported)" if k.startswith("MOUSE") and k not in norm else ""))
+            print(f"  {k:<10} {action:<30} -> {status}")
+
+        missing = sorted({norm.get(k, k.lower()) for k in seen
+                          if norm.get(k, k.lower()) not in profile_keys
+                          and not k.startswith("MOUSE")})
+        if missing:
+            print(f"\n[GameAI] Suggested keys to add: {','.join(missing)}")
+            print(f"[GameAI] Apply with: python gameai.py register {profile.name} "
+                  f"--window \"{profile.window_title}\" "
+                  f"--keys {','.join(profile.keys)},{','.join(missing)} --force "
+                  f"(built-ins: this exact command; --force overrides the builtin)")
+    finally:
+        env.close()
+
+
 def cmd_selftest(args):
     """End-to-end offline test: fake env, tiny net, no input, no files."""
     import numpy as np
@@ -495,6 +576,10 @@ def main():
     p.add_argument("--seconds", type=int, default=30)
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(func=cmd_play)
+
+    p = sub.add_parser("controls", help="study on-screen control hints (read-only)")
+    p.add_argument("game", help="game name, alias, or window title")
+    p.set_defaults(func=cmd_controls)
 
     p = sub.add_parser("selftest", help="offline self-test (no input sent)")
     p.set_defaults(func=cmd_selftest)
