@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# GameAI models + runtime state
+*.pt
+games.json
+
+# OS
+Thumbs.db
+.DS_Store
